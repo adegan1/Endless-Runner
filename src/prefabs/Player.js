@@ -6,8 +6,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         // set player properties
         this.MAX_JUMPS = 2
-        this.JUMP_VELOCITY = -800
-        this.DIVE_VELOCITY = 150
+        this.JUMP_VELOCITY = -850
+        this.DIVE_VELOCITY = 100
         this.LEFT_VELOCITY = -300
         this.RIGHT_VELOCITY = 150
 
@@ -115,7 +115,7 @@ class JumpState extends State {
             player.setVelocityY(player.JUMP_VELOCITY)
             player.jumps--
         } else if (!player.grounded && player.jumps > 0 && space.isDown) {
-            console.log("Air Jump")
+            //console.log("Air Jump")
             player.setVelocityY(player.JUMP_VELOCITY)
             player.jumps--
         }

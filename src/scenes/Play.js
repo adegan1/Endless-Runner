@@ -7,6 +7,11 @@ class Play extends Phaser.Scene {
         // variables and settings
         this.physics.world.gravity.y = 2600
 
+        // set platform properties
+        this.SPAWN_LOC = width + (width / 3 * 2)
+        this.HEIGHT_MIN = height / 5 * 4
+        this.HEIGHT_MAX = height / 5 * 2
+
         // initialize score variables
         this.playerScore = 0
     }
@@ -20,13 +25,15 @@ class Play extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#d17c60')
 
         // add platforms
-        this.platform1 = new Platform(this, 0, height / 4 * 3, 'platform1').setOrigin(0,0)
+        this.platformInit = new Platform(this, 0, height / 4 * 3, 'platform1').setOrigin(0,0)
+
+        this.platforms = this.add.group([this.platformInit])
 
         // add player
         this.player = new Player(this, width / 6, height / 4 * 2, 'player', 0).setOrigin(0,0)
 
         // add physics collider
-        this.physics.add.collider(this.player, this.platform1)
+        this.physics.add.collider(this.player, this.platforms)
 
         // setup keyboard input
         this.keys = this.input.keyboard.createCursorKeys()
@@ -61,5 +68,11 @@ class Play extends Phaser.Scene {
 
         // update the player's state machine
         this.playerFSM.step()
+        this.platformFSM.step()
+    }
+
+    spawnPlatform() {
+        this.newPlatform = new Platform(this, this.SPAWN_LOC, Phaser.Math.Between(this.HEIGHT_MIN, this.HEIGHT_MAX), 'platform1').setOrigin(0,0)
+        this.physics.add.collider(this.player, this.newPlatform)
     }
 }
