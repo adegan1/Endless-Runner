@@ -16,7 +16,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.jumping = false;
 
         this.body.setSize(this.width - this.width, this.height)
-        this.body.setCollideWorldBounds(true)
         this.body.setAllowGravity(true)
 
         // initiate a state machine to manage the player

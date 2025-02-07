@@ -1,6 +1,12 @@
 class Platform extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, texture, frame) {
-        super(scene, x, y, texture, frame)
+    constructor(scene, velocity, spawnLoc) {
+        super(scene, spawnLoc, Phaser.Math.Between(HEIGHT_MIN, HEIGHT_MAX), 'platform1')
+
+        this.HEIGHT_MIN = height / 5 * 4
+        this.HEIGHT_MAX = height / 5 * 2
+
+        this.parentScene = scene
+
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
@@ -11,46 +17,23 @@ class Platform extends Phaser.Physics.Arcade.Sprite {
 
         // set platform properties
         this.SPAWN_RECUR_LOC = width / 10
-        this.DESPAWN_LOC = 0
+        this.DESPAWN_LOC = 0 - width * 1.2
 
-        this.platformVelocity = -850
+        this.newPlatform = true
 
-        // initiate a state machine to manage platforms
-        scene.platformFSM = new StateMachine('spawn', {
-            spawn: new SpawnState(),
-            spawnNew: new SpawnNewState(),
-            despawn: new DespawnState(),
-        }, [scene, this])
-    }
-}
-
-// platform state classes
-class SpawnState extends State {
-    enter(scene, platform) {
-        platform.setVelocityX(platform.platformVelocity)
+        this.setVelocityX(velocity)
     }
 
-    execute(scene, platform) {
-        if (platform.x <= platform.SPAWN_RECUR_LOC) {
-            this.stateMachine.transition('spawnNew')
+    update() {
+        // add new platform when reaching spawn recur location
+        if (this.newPlatform && this.x <= this.SPAWN_RECUR_LOC) {
+            this.parentScene.spawnPlatform(this.parent, this.velocity)
+            this.newPlatform = false
         }
 
-        if (platform.x <= platform.DESPAWN_LOC) {
-            this.stateMachine.transition('despawn')
+        // destroy platform if it goes too far left
+        if (this.x <= this.DESPAWN_LOC) {
+            this.destroy()
         }
-    }
-}
-
-class SpawnNewState extends State {
-    enter(scene, platform) {
-        scene.spawnPlatform()
-        this.stateMachine.transition('spawn')
-    }
-}
-
-class DespawnState extends State {
-    enter(scene, platform) {
-        console.log("despawn platform")
-        platform.destroy()
     }
 }
