@@ -7,7 +7,7 @@ let config = {
     type: Phaser.AUTO,
     width: 1080,
     height: 640,
-    picelArt: true,
+    pixelArt: true,
     physics: {
         default: 'arcade',
         arcade: {
@@ -22,5 +22,6 @@ let game = new Phaser.Game(config)
 let { width, height } = game.config
 
 // define global variables
-let HEIGHT_MIN = height / 5 * 4
-let HEIGHT_MAX = height / 5 * 2
+let PLATFORM_HEIGHT_MIN = height / 5 * 4
+let PLATFORM_HEIGHT_MAX = height / 5 * 2
+let ENEMY_HEIGHT_MAX = height / 10

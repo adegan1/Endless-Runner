@@ -14,36 +14,96 @@ class Play extends Phaser.Scene {
         this.MAX_SPEED = 2.5
         this.PLATFORM_GAP_OFFSET = 2.25
 
+        this.shotVelocity = 2000
+
         // initialize score variables
         this.playerScore = 0
         this.playerPosMult = .0001
         this.TIME_MULT = .1
-    }
 
-    preload() {
- 
+        // player shot cooldown
+        this.shotCooldown = 25
+        this.shotTimer = 0
+
+        // initialize enemy variables
+        this.enemyCooldown = 170
+        this.enemyTimer = 50
+
+        this.enemyPoints = 50
+        this.lastPlatformY = 1
+
+        this.enemyHeight = 48   // sprite y dimension
+
+        // player lives and invincibility
+        this.lives = 3
+
+        this.playerIFrames = 60
+        this.playerITimer = 0
     }
 
     create() {
         // change background color
-        this.cameras.main.setBackgroundColor('#d17c60')
+        this.cameras.main.setBackgroundColor('#82e1ed')
 
-        // add platforms
-        this.platformGroup = this.add.group({
-            runChildUpdate: true
-        })
+        this.physics.world.setBounds(0, -height, width, height * 3)
 
         // add player
         this.player = new Player(this, this.playerStartPos, height / 6, 'player', 0).setOrigin(0,0)
 
-        // wall that prevents player from exiting right side of screen
-        let rightWall = this.physics.add.sprite(width, 0).setOrigin(0,0)
-        rightWall.body.setAllowGravity(false).setSize(width / 4, height, false).setImmovable(true)
-        let leftWall = this.physics.add.sprite(0 - width / 4, 0).setOrigin(0,0)
-        leftWall.body.setAllowGravity(false).setSize(width / 4, height, false).setImmovable(true) 
+        // add collider groups
+        this.platformGroup = this.add.group({ runChildUpdate: true })
 
-        this.sideWalls = this.add.group([rightWall, leftWall])
-        this.physics.add.collider(this.player, this.sideWalls)
+        this.shotGroup = this.add.group({ runChildUpdate: true })
+
+        this.enemyGroup = this.add.group({ runChildUpdate: true })
+
+        this.enemyWallGroup = this.add.group({ runChildUpdate: true })
+
+        // add walls for enemies
+        let topWall = this.physics.add.sprite(0, 0 - height / 4).setImmovable(true)
+        topWall.body.setSize(width * 3, height / 2).setAllowGravity(false)
+        this.enemyWallGroup.add(topWall)
+
+        let bottomWall = this.physics.add.sprite(0, height * 1.25).setImmovable(true)
+        bottomWall.body.setSize(width * 3, height / 2).setAllowGravity(false)
+        this.enemyWallGroup.add(bottomWall)
+
+        this.physics.add.collider(this.enemyGroup, this.enemyWallGroup)
+
+        // delete shots that hit platforms
+        this.physics.add.overlap(this.shotGroup, this.platformGroup, (shot) => {
+            this.shotGroup.remove(shot)
+            shot.destroy()
+        })
+
+        // damage player on enemy collision
+        this.physics.add.overlap(this.player, this.enemyGroup, () => {
+            //console.log('ouch, lives: ' + this.lives)
+            if (this.playerITimer <= 0) {
+                this.lives--
+                this.playerITimer = this.playerIFrames
+
+                // flash player to indicate invincibility
+                this.player.alpha = 1
+                this.tweens.add ({
+                    targets: this.player,
+                    alpha: 0,
+                    duration: 80,
+                    yoyo: true,
+                    repeat: 5
+                })
+            }
+        })
+
+        // remove shot and enemy on collision
+        this.physics.add.overlap(this.shotGroup, this.enemyGroup, (shot, enemy) => {
+            this.shotGroup.remove(shot)
+            this.enemyGroup.remove(enemy)
+            shot.destroy()
+            enemy.destroy()
+
+            this.playerScore += this.enemyPoints
+        })
 
         // add platforms
         let initPlatform = new Platform(this, this.platformVelocity * this.gameSpeed, width / 10).setOrigin(0,0) // spawn initial platform
@@ -76,24 +136,54 @@ class Play extends Phaser.Scene {
             },
             fixedWidth: 300
         };
-        this.scoreText = this.add.text(10, height / 100, '$' + this.playerScore, this.scoreConfig);
+        this.scoreText = this.add.text(10, height / 100, this.playerScore, this.scoreConfig);
+
+        // display health
+        this.healthSprite = this.add.sprite(10, height / 100 + this.scoreText.height, 'health', 0).setOrigin(0,0).setScale(2)
     }
 
     update() {
-        this.player.grounded = this.player.body.touching.down
-
         // update the player's state machine
+        this.player.grounded = this.player.body.touching.down
         this.playerFSM.step()
-
-        if (this.player.y >= height * 1.5) {
-            this.scene.start('loadScene')
+        
+        // decrease cooldown timers
+        if (this.shotTimer >= 0) {
+            this.shotTimer--
         }
 
-        this.updateScore()
+        if (this.enemyTimer >= 0) {
+            this.enemyTimer--
+        }
 
+        if (this.playerITimer >= 0) {
+            this.playerITimer--
+        }
+
+        // spawn enemies
+        if (this.enemyTimer <= 0) {
+            this.spawnEnemy()
+        }
+
+        // kill player if they fall off screen
+        if (this.player.y >= height * 1.5) {
+            this.lives = 0
+        }
+
+        if (this.lives <= 0) {
+            this.scene.start('playScene')
+        }
+
+        // increment game speed
         if (this.gameSpeed < this.MAX_SPEED) {
             this.gameSpeed += this.speedIncrease
         }
+
+        // update player score
+        this.updateScore()
+
+        // update player health sprite
+        this.healthSprite.setFrame(3 - this.lives)
     }
 
     spawnPlatform() {
@@ -101,6 +191,20 @@ class Play extends Phaser.Scene {
 
         let platform = new Platform(this, this.platformVelocity * this.gameSpeed, this.platformSpawnLoc).setOrigin(0,0)
         this.platformGroup.add(platform)
+
+        this.lastPlatformY = platform.y
+    }
+
+    spawnShot() {
+        let shot = new Shot(this, this.shotVelocity, this.player.x + this.player.width, this.player.y + (this.player.height / 5)).setOrigin(0,0)
+        this.shotGroup.add(shot)
+    }
+
+    spawnEnemy() {
+        this.enemyTimer = this.enemyCooldown
+        this.enemyBehavior = Phaser.Math.Between(1,3)
+        let enemy = new Enemy(this, width * 1.1, this.lastPlatformY - this.enemyHeight * 3, this.gameSpeed, this.enemyBehavior).setOrigin(0,0)
+        this.enemyGroup.add(enemy)
     }
 
     updateScore() {
@@ -111,6 +215,6 @@ class Play extends Phaser.Scene {
         }
 
         this.roundScore = Math.floor(this.playerScore)
-        this.scoreText.text = "$" + this.roundScore
+        this.scoreText.text = this.roundScore
     }
 }

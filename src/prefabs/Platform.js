@@ -1,9 +1,6 @@
 class Platform extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, velocity, spawnLoc) {
-        super(scene, spawnLoc, Phaser.Math.Between(HEIGHT_MIN, HEIGHT_MAX), 'platform1')
-
-        this.HEIGHT_MIN = height / 5 * 4
-        this.HEIGHT_MAX = height / 5 * 2
+        super(scene, spawnLoc, Phaser.Math.Between(PLATFORM_HEIGHT_MIN, PLATFORM_HEIGHT_MAX), 'platform')
 
         this.parentScene = scene
 

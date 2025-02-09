@@ -7,8 +7,8 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         // set player properties
         this.MAX_JUMPS = 2
         this.JUMP_VELOCITY = -850
-        this.DIVE_VELOCITY = 100
-        this.LEFT_VELOCITY = -300
+        this.DIVE_VELOCITY = 200
+        this.LEFT_VELOCITY = -400
         this.RIGHT_VELOCITY = 150
 
         this.grounded = true
@@ -17,6 +17,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.body.setSize(this.width - this.width, this.height)
         this.body.setAllowGravity(true)
+        this.body.collideWorldBounds = true
 
         // initiate a state machine to manage the player
         scene.playerFSM = new StateMachine('idle', {
@@ -24,6 +25,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             move: new MoveState(),
             jump: new JumpState(),
             dive: new DiveState(),
+            shoot: new ShootState(),
         }, [scene, this])
     }
 }
@@ -36,7 +38,7 @@ class IdleState extends State {
 
     execute(scene, player) {
         // make a local copy of the keyboard object
-        const { left, down, right, space } = scene.keys
+        const { left, down, right, space, shift } = scene.keys
         const AKey = scene.keys.AKey
         const SKey = scene.keys.SKey
         const DKey = scene.keys.DKey
@@ -44,6 +46,12 @@ class IdleState extends State {
         // transition depending on key pressed
         if (Phaser.Input.Keyboard.JustDown(space)) {
             this.stateMachine.transition('jump')
+            return
+        }
+
+        // shoot
+        if (shift.isDown && scene.shotTimer <= 0) {
+            this.stateMachine.transition('shoot')
             return
         }
 
@@ -64,10 +72,16 @@ class IdleState extends State {
 class MoveState extends State {
     execute(scene, player) {
         // make a local copy of the keyboard object
-        const { left, down, right, space } = scene.keys
+        const { left, down, right, space, shift } = scene.keys
         const AKey = scene.keys.AKey
         const SKey = scene.keys.SKey
         const DKey = scene.keys.DKey
+
+        // shoot
+        if (shift.isDown && scene.shotTimer <= 0) {
+            this.stateMachine.transition('shoot')
+            return
+        }
 
         // transition depending on key pressed
         if (Phaser.Input.Keyboard.JustDown(space)) {
@@ -84,14 +98,17 @@ class MoveState extends State {
         if (!player.grounded) {
             if (down.isDown || SKey.isDown) {
                 this.stateMachine.transition('dive')
+                return
             }
         }
 
         // handle movement
         if(left.isDown || AKey.isDown) {
             player.setVelocityX(player.LEFT_VELOCITY)
+            return
         } else if (right.isDown || DKey.isDown) {
             player.setVelocityX(player.RIGHT_VELOCITY)
+            return
         }
     }
 }
@@ -99,7 +116,7 @@ class MoveState extends State {
 class JumpState extends State {
     execute(scene, player) {
         // make a local copy of the keyboard object
-        const { left, down, right, space } = scene.keys
+        const { left, down, right, space, shift } = scene.keys
         const AKey = scene.keys.AKey
         const SKey = scene.keys.SKey
         const DKey = scene.keys.DKey
@@ -125,8 +142,17 @@ class JumpState extends State {
 
 class DiveState extends State {
     enter(scene, player) {
-        console.log("Dive")
+        //console.log("Dive")
         player.setVelocityY(player.body.velocity.y + player.DIVE_VELOCITY)
+        this.stateMachine.transition('move')
+    }
+}
+
+class ShootState extends State {
+    enter(scene, player) {
+        //console.log("Shoot")
+        scene.shotTimer = scene.shotCooldown
+        scene.spawnShot(this.parent, this.velocity)
         this.stateMachine.transition('move')
     }
 }
