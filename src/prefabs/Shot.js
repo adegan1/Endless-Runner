@@ -7,9 +7,9 @@ class Shot extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.body.setSize(this.width, this.height)
+        this.body.setCircle(this.width, this.height)
+        this.body.setOffset(-this.width / 2, -this.height / 2)
         this.body.setAllowGravity(false)
-        this.body.setCircle(true)
 
         this.setVelocityX(velocity)
     }

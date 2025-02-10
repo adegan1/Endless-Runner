@@ -10,6 +10,10 @@ class Load extends Phaser.Scene {
         this.load.image('shot', 'shot.png')
         this.load.image('enemy', 'enemy.png')
 
+        this.load.image('enemy_part', 'enemy_part.png')
+        this.load.image('grass_particle', 'grass_particle.png')
+        this.load.image('air_jump_particle', 'air_jump.png')
+
         this.load.image('sky_bg', 'bg.png')
         this.load.image('hills_bg_close', 'hills_bg_1.png')
         this.load.image('hills_bg_mid', 'hills_bg_2.png')
@@ -26,9 +30,6 @@ class Load extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 32
         })
-
-        // load font
-        this.load.font('upheaval', 'fonts/upheavtt.ttf', 'truetype')
     }
 
     create() {

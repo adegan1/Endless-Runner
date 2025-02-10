@@ -7,7 +7,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this)
         scene.physics.add.existing(this)
 
-        this.body.setSize(this.width, this.height)
+        this.body.setCircle(this.width / 2, this.height / 2)
+        this.body.setOffset(0, 0)
         this.setDepth(1)
 
         this.VELOCITY_X_MIN = -500
@@ -16,6 +17,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         this.VELOCITY_Y_MIN = 300
         this.VELOCITY_Y_MAX = -300
+
+        this.rotationSpeed = -6
 
         this.enemyVelocity = Phaser.Math.Between(this.VELOCITY_X_MIN, this.VELOCITY_X_MAX)
 
@@ -33,11 +36,16 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
                 break;
             case 3:
                 this.body.setAllowGravity(true)
-                this.body.setBounceY(0.92)
+                this.body.setMaxVelocityY(1000)
+                this.body.setBounceY(50)
                 this.setY(0)
                 this.setVelocityX(this.enemyVelocity * gameSpeed)
                 scene.physics.add.collider(this, scene.platformGroup)
                 break;
         }
+    }
+
+    update() {
+        this.angle += this.rotationSpeed
     }
 }
