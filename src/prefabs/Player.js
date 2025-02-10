@@ -19,6 +19,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.body.setAllowGravity(true)
         this.body.collideWorldBounds = true
 
+        this.leftAnimSpeed = .75
+        this.rightAnimSpeed = 1.25
+
+        this.anims.play('run')
+
         // initiate a state machine to manage the player
         scene.playerFSM = new StateMachine('idle', {
             idle: new IdleState(),
@@ -37,6 +42,9 @@ class IdleState extends State {
     }
 
     execute(scene, player) {
+        // update run animation speed
+        player.anims.timeScale = scene.gameSpeed
+
         // make a local copy of the keyboard object
         const { left, down, right, space, shift } = scene.keys
         const AKey = scene.keys.AKey
@@ -105,9 +113,15 @@ class MoveState extends State {
         // handle movement
         if(left.isDown || AKey.isDown) {
             player.setVelocityX(player.LEFT_VELOCITY)
+
+            // update run animation speed
+            player.anims.timeScale = scene.gameSpeed * player.leftAnimSpeed
             return
         } else if (right.isDown || DKey.isDown) {
             player.setVelocityX(player.RIGHT_VELOCITY)
+
+            // update run animation speed
+            player.anims.timeScale = scene.gameSpeed * player.rightAnimSpeed
             return
         }
     }

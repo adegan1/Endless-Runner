@@ -16,6 +16,8 @@ class Play extends Phaser.Scene {
 
         this.shotVelocity = 2000
 
+        this.bgSpeed = 1
+
         // initialize score variables
         this.playerScore = 0
         this.playerPosMult = .0001
@@ -42,13 +44,19 @@ class Play extends Phaser.Scene {
     }
 
     create() {
-        // change background color
-        this.cameras.main.setBackgroundColor('#82e1ed')
+        // place tile sprites
+        this.sky_bg = this.add.tileSprite(0, 0, 1080, 640, 'sky_bg').setOrigin(0,0)
+        this.sky_bg.tilePositionX -= width / 2      // offset sky background image
+        this.hills_bg_far = this.add.tileSprite(0, 0, 1080, 640, 'hills_bg_far').setOrigin(0,0)
+        this.hills_bg_mid = this.add.tileSprite(0, 0, 1080, 640, 'hills_bg_mid').setOrigin(0,0)
+        this.hills_bg_close = this.add.tileSprite(0, 0, 1080, 640, 'hills_bg_close').setOrigin(0,0)
 
         this.physics.world.setBounds(0, -height, width, height * 3)
 
         // add player
-        this.player = new Player(this, this.playerStartPos, height / 6, 'player', 0).setOrigin(0,0)
+        this.player = new Player(this, this.playerStartPos, height / 6, 'player', 0).setOrigin(0,0).setScale(2.5)
+        this.player.body.setSize(this.player.width / 2.5, this.player.height / 5 * 4)
+        this.player.body.setOffset(this.player.width / 3, this.player.height / 6)
 
         // add collider groups
         this.platformGroup = this.add.group({ runChildUpdate: true })
@@ -117,35 +125,39 @@ class Play extends Phaser.Scene {
         this.keys.SKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S)
         this.keys.DKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
 
-        // debug key listener
-        this.input.keyboard.on('keydown-K', function() {
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
-        }, this)
-
         // display score
         this.scoreConfig = {
-            fontFamily: 'Copperplate',
-            fontSize: '32px',
-            backgroundColor: '#3d200c',
-            color: '#a68b79',
+            fontFamily: 'upheaval',
+            fontSize: '48px',
+            color: '#e0e0e0',
             align: 'left',
             padding: {
-                top: 5,
-                bottom: 5,
+                top: 8,
+                left: 16,
+                bottom: 18,
             },
-            fixedWidth: 300
+            fixedWidth: 200
         };
-        this.scoreText = this.add.text(10, height / 100, this.playerScore, this.scoreConfig);
+        this.scoreBg = this.add.sprite(10, height / 100, 'score_bg').setOrigin(0,0)
+        this.scoreBg.setDepth(2)
+        this.scoreText = this.add.text(10, height / 100, this.playerScore, this.scoreConfig)
+        this.scoreText.setDepth(2)
 
         // display health
         this.healthSprite = this.add.sprite(10, height / 100 + this.scoreText.height, 'health', 0).setOrigin(0,0).setScale(2)
+        this.healthSprite.setDepth(2)
     }
 
     update() {
         // update the player's state machine
         this.player.grounded = this.player.body.touching.down
         this.playerFSM.step()
+
+        // move tilesprites
+        this.sky_bg.tilePositionX += (this.bgSpeed * .5) * this.gameSpeed
+        this.hills_bg_far.tilePositionX += (this.bgSpeed * 1) * this.gameSpeed
+        this.hills_bg_mid.tilePositionX += (this.bgSpeed * 2.5) * this.gameSpeed
+        this.hills_bg_close.tilePositionX += (this.bgSpeed * 6) * this.gameSpeed
         
         // decrease cooldown timers
         if (this.shotTimer >= 0) {
@@ -184,6 +196,17 @@ class Play extends Phaser.Scene {
 
         // update player health sprite
         this.healthSprite.setFrame(3 - this.lives)
+
+        // set player animations
+        if (this.player.body.velocity.y < 0) {
+            this.player.anims.play('jump')
+        } else if (this.player.body.velocity.y > 0) {
+            this.player.anims.play('fall')
+        } else {
+            if (this.player.anims.isPlaying && this.player.anims.currentAnim.key != 'run') {
+                this.player.anims.play('run')
+            }
+        }
     }
 
     spawnPlatform() {

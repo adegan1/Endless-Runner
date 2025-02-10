@@ -1,6 +1,10 @@
 // Project: Endless Runner
 // Name: Andrew Degan
 
+// Additional Resources:
+//  -Character Art: Jungle Pack on itch.io
+//  -Font: Upheaval by Ænigma
+
 'use strict'
 
 let config = {
@@ -8,10 +12,13 @@ let config = {
     width: 1080,
     height: 640,
     pixelArt: true,
+    scale: {
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true
+            //debug: true
         }
     },
     scene: [ Menu, Load, Play ]
