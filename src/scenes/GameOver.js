@@ -80,7 +80,7 @@ class GameOver extends Phaser.Scene {
 
         // buttons
         this.restartButton = this.add.sprite(width / 8 * 3, height / 1.3, 'button').setScale(2)
-        this.restartButton = this.add.text(this.restartButton.x, this.restartButton.y - this.restartButton.height, "Retry", this.buttonTextConfig).setOrigin(0.5,0)
+        this.restartText = this.add.text(this.restartButton.x, this.restartButton.y - this.restartButton.height, "Retry", this.buttonTextConfig).setOrigin(0.5,0)
         this.restartButton.setInteractive()
         this.restartButton.on('pointerover', () => {
             this.restartButton.setTint(0x847e87)
