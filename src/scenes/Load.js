@@ -25,6 +25,18 @@ class Load extends Phaser.Scene {
             frameWidth: 96,
             frameHeight: 32
         })
+
+        // load audio
+        this.load.path = './assets/sfx/'
+        this.load.audio('jumpSFX', 'jump.wav', {volume: .1})
+        this.load.audio('airJumpSFX', 'airJump.wav')
+        this.load.audio('shootSFX', 'shoot.wav')
+        this.load.audio('explosionSFX', 'explosion.wav')
+        this.load.audio('hurtSFX', 'hurt.wav')
+        this.load.audio('dieSFX', 'playerDie.wav')
+
+        this.load.audio('runnerSong', 'music/runnerSong.wav')
+        this.load.audio('newHighScoreSFX', 'music/newHighScore.wav')
     }
 
     create() {

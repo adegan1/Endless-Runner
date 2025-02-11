@@ -23,6 +23,10 @@ class Menu extends Phaser.Scene {
 
         // load font
         this.load.font('upheaval', 'fonts/upheavtt.ttf', 'truetype')
+
+        // load sounds
+        this.load.path = './assets/sfx/'
+        this.load.audio('buttonPressSFX', 'buttonPress.wav')
     }
 
     create() {
@@ -36,21 +40,21 @@ class Menu extends Phaser.Scene {
                 top: 14,
             },
             fixedWidth: 200
-        };
+        }
 
         this.textConfigCenter = {
             fontFamily: 'upheaval',
             fontSize: '22px',
             color: '#e0e0e0',
             align: 'center',
-        };
+        }
 
         this.textConfigLeft = {
             fontFamily: 'upheaval',
             fontSize: '18px',
             color: '#d7d7d7',
             align: 'left',
-        };
+        }
 
         // background tilesprites
         this.sky_bg = this.add.tileSprite(0, 0, 1080, 640, 'sky_bg').setOrigin(0,0)
@@ -75,6 +79,8 @@ class Menu extends Phaser.Scene {
         })
         this.playButton.on('pointerdown', () => {
             // enter load scene
+            this.buttonPressSfx = this.sound.add('buttonPressSFX', { volume: 0.1 })
+            this.buttonPressSfx.play()
             this.scene.start('loadScene')
         })
 

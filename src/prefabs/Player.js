@@ -13,7 +13,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         this.grounded = true
         this.jumps = this.EXTRA_JUMPS
-        this.jumping = false;
+        this.jumping = false
 
         this.body.setSize(this.width - this.width, this.height)
         this.body.setAllowGravity(true)
@@ -139,11 +139,15 @@ class JumpState extends State {
         if (player.grounded && space.isDown) {
             player.setVelocityY(player.JUMP_VELOCITY)
             player.jumps--
+
+            scene.jumpSfx.play()
         } else if (!player.grounded && player.jumps > 0 && space.isDown) {
             //console.log("Air Jump")
             player.setVelocityY(player.JUMP_VELOCITY)
             scene.airjumpParticle()
             player.jumps--
+
+            scene.airJumpSfx.play()
         }
 
         this.stateMachine.transition('move')

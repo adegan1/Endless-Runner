@@ -13,6 +13,7 @@ class GameOver extends Phaser.Scene {
 
     create() {
         // set high score
+        // sorry, it doesn't store in the browser :/
         if (highScore > 0) {
             if (playerScore > highScore) {
                 highScore = playerScore
@@ -35,7 +36,7 @@ class GameOver extends Phaser.Scene {
             padding: {
                 top: 14,
             },
-        };
+        }
 
         this.scoreTextConfig = {
             fontFamily: 'upheaval',
@@ -45,7 +46,7 @@ class GameOver extends Phaser.Scene {
             padding: {
                 top: 14,
             },
-        };
+        }
 
         this.buttonTextConfig = {
             fontFamily: 'upheaval',
@@ -55,7 +56,7 @@ class GameOver extends Phaser.Scene {
             padding: {
                 top: 14,
             },
-        };
+        }
 
         // background tilesprites
         this.sky_bg = this.add.tileSprite(0, 0, 1080, 640, 'sky_bg').setOrigin(0,0)
@@ -88,6 +89,8 @@ class GameOver extends Phaser.Scene {
             this.restartButton.clearTint()
         })
         this.restartButton.on('pointerdown', () => {
+            this.buttonPressSfx = this.sound.add('buttonPressSFX', { volume: 0.1 })
+            this.buttonPressSfx.play()
             this.scene.start('playScene')
         })
 
@@ -101,8 +104,15 @@ class GameOver extends Phaser.Scene {
             this.menuButton.clearTint()
         })
         this.menuButton.on('pointerdown', () => {
+            this.buttonPressSfx = this.sound.add('buttonPressSFX', { volume: 0.1 })
+            this.buttonPressSfx.play()
             this.scene.start('menuScene')
         })
+
+        // new high score sound
+        if (newHighScore) {
+            this.sound.play('newHighScoreSFX')
+        }
     }
 
     update() {

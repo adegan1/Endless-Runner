@@ -45,6 +45,10 @@ class Play extends Phaser.Scene {
         this.playerITimer = 0
 
         this.footprintTimer = 0
+
+        // sound variables
+        this.bgmVolume = .6
+        this.sfxVolume = .3
     }
 
     create() {
@@ -92,7 +96,7 @@ class Play extends Phaser.Scene {
             rotate: { min: 0, max: 360},
             gravityY: 500,
             emitting: false
-        });
+        })
 
         // player footprint particles
         this.footprintEmitter = this.add.particles(this.player.width / 2, this.player.height * 2.3, 'grass_particle', {
@@ -105,7 +109,7 @@ class Play extends Phaser.Scene {
             frequency: 10,
             duration: 20,
             emitting: false
-        });
+        })
 
         // player air jump particle
         this.airJumpEmitter = this.add.particles(this.player.width, this.player.height * 2.3, 'air_jump_particle', {
@@ -115,7 +119,7 @@ class Play extends Phaser.Scene {
             angle: 90,
             speed: 75,
             emitting: false
-        });
+        })
 
         this.footprintEmitter.startFollow(this.player)
         this.airJumpEmitter.startFollow(this.player)
@@ -142,6 +146,8 @@ class Play extends Phaser.Scene {
                     yoyo: true,
                     repeat: 5
                 })
+
+                this.hurtSfx.play()
             }
         })
 
@@ -156,6 +162,7 @@ class Play extends Phaser.Scene {
             enemy.destroy()
 
             playerScore += this.enemyPoints
+            this.explosionSfx.play()
         })
 
         // add platforms
@@ -181,7 +188,7 @@ class Play extends Phaser.Scene {
                 bottom: 18,
             },
             fixedWidth: 200
-        };
+        }
         this.scoreBg = this.add.sprite(10, height / 100, 'score_bg').setOrigin(0,0)
         this.scoreBg.setDepth(2)
         this.scoreText = this.add.text(10, height / 100, playerScore, this.scoreConfig)
@@ -193,6 +200,22 @@ class Play extends Phaser.Scene {
 
         // camera fade
         this.cameras.main.fadeIn(500, 34, 32, 52)
+
+        // add sounds
+        this.jumpSfx = this.sound.add('jumpSFX', { volume: this.sfxVolume/2 })
+        this.airJumpSfx = this.sound.add('airJumpSFX', { volume: this.sfxVolume })
+        this.shootSfx = this.sound.add('shootSFX', { volume: this.sfxVolume })
+        this.explosionSfx = this.sound.add('explosionSFX', { volume: this.sfxVolume })
+        this.hurtSfx = this.sound.add('hurtSFX', { volume: this.sfxVolume })
+        this.dieSfx = this.sound.add('dieSFX', { volume: this.sfxVolume })
+
+        // play background music
+        this.bgm = this.sound.add('runnerSong', {
+            volume: this.bgmVolume,
+            rate: 1,
+            loop: true,
+        })
+        this.bgm.play()
     }
 
     update() {
@@ -239,9 +262,12 @@ class Play extends Phaser.Scene {
         }
 
         // game over
-        if (this.lives <= 0) {
+        if (this.lives <= 0 && this.alive) {
             this.alive = false
-            this.time.delayedCall(500, () => { this.scene.start('gameOverScene'); });
+            this.dieSfx.play()
+            this.bgm.stop()
+
+            this.time.delayedCall(500, () => { this.scene.start('gameOverScene') })
         }
 
         // increment game speed
@@ -273,6 +299,9 @@ class Play extends Phaser.Scene {
                 this.footprintEmitter.explode(1)
             }
         }
+
+        // increase song speed
+        this.bgm.rate = 1
     }
 
     spawnPlatform() {
@@ -287,6 +316,8 @@ class Play extends Phaser.Scene {
     spawnShot() {
         let shot = new Shot(this, this.shotVelocity, this.player.x + this.player.width, this.player.y + (this.player.height / 1.5)).setOrigin(0,0)
         this.shotGroup.add(shot)
+
+        this.shootSfx.play()
     }
 
     spawnEnemy() {
