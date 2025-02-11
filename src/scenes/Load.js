@@ -14,11 +14,6 @@ class Load extends Phaser.Scene {
         this.load.image('grass_particle', 'grass_particle.png')
         this.load.image('air_jump_particle', 'air_jump.png')
 
-        this.load.image('sky_bg', 'bg.png')
-        this.load.image('hills_bg_close', 'hills_bg_1.png')
-        this.load.image('hills_bg_mid', 'hills_bg_2.png')
-        this.load.image('hills_bg_far', 'hills_bg_3.png')
-
         this.load.image('score_bg', 'score_bg.png')
 
         this.load.spritesheet('player', 'player.png', {

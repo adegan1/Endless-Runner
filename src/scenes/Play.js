@@ -241,12 +241,6 @@ class Play extends Phaser.Scene {
         // game over
         if (this.lives <= 0) {
             this.alive = false
-
-            if (playerScore > highScore) {
-                highScore = playerScore
-                newHighScore = true
-            }
-
             this.time.delayedCall(500, () => { this.scene.start('gameOverScene'); });
         }
 
